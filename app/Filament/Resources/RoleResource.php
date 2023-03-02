@@ -2,36 +2,36 @@
 
 namespace App\Filament\Resources;
 
-use DateTime;
 use Filament\Forms;
-
 use Filament\Tables;
+
 use Filament\Resources\Form;
 use Filament\Resources\Table;
 use Filament\Resources\Resource;
+use Spatie\Permission\Models\Role;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\MultiSelect;
+use Filament\Forms\Components\CheckboxList;
+use App\Filament\Resources\RoleResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\PermissionResource\Pages;
-use App\Filament\Resources\PermissionResource\RelationManagers;
+use App\Filament\Resources\RoleResource\RelationManagers;
+use App\Filament\Resources\RoleResource\RelationManagers\PermissionsRelationManager;
 
-class PermissionResource extends Resource
+class RoleResource extends Resource
 {
-    protected static ?string $model = Permission::class;
+    protected static ?string $model = Role::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-key';
+    protected static ?string $navigationIcon = 'heroicon-o-collection';
 
-    protected static ?string $navigationLabel = 'Permissions';
+    protected static ?string $navigationLabel = 'Rôles';
 
     protected static ?string $navigationGroup = 'ADMIN MANAGEMENT';
 
-    protected static ?int $navigationSort = 2;
-
-    //protected static bool $shouldRegisterNavigation = false;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -47,6 +47,10 @@ class PermissionResource extends Resource
                             ])
                             ->label('Guard')
                             ->default('admin'),
+                        CheckboxList::make('permissions')
+                            ->relationship('permissions', 'name')
+                            ->columns(3)
+                            ->required(),
 
                     ])
             ]);
@@ -73,10 +77,19 @@ class PermissionResource extends Resource
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            PermissionsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManagePermissions::route('/'),
+            'index' => Pages\ListRoles::route('/'),
+            'create' => Pages\CreateRole::route('/create'),
+            'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
     }
 }
